@@ -6,13 +6,6 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client;
 
-import java.lang.reflect.Type;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -20,6 +13,13 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+
+import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Date Serializer/Deserializer to make .NET and Java dates compatible
@@ -55,25 +55,25 @@ public class DateSerializer implements JsonSerializer<Date>, JsonDeserializer<Da
      * Deserializes an ISO-8601 formatted date
      */
     public static Date deserialize(String strVal) throws ParseException {
-        
-    	String s;
-    	
-    	if(strVal.contains("+00:00")){
-    		strVal = strVal.replace("+00:00", "");
-    	}
-    	
-    	if(strVal.length() == 19){// adapt from format yyyy-MM-ddTHH:mm:dd
-    		s = strVal + ".+00:00";
-    	}else if(strVal.contains(".Z")){
-    		// Change .Z to +00:00 to adapt the string to a format
+
+        String s;
+
+        if (strVal.contains("+00:00")) {
+            strVal = strVal.replace("+00:00", "");
+        }
+
+        if (strVal.length() == 19) {// adapt from format yyyy-MM-ddTHH:mm:dd
+            s = strVal + ".+00:00";
+        } else if (strVal.contains(".Z")) {
+            // Change .Z to +00:00 to adapt the string to a format
             // that can be parsed in Java
-    		s = strVal.replace(".Z", ".+00:00");
-    	}else{ 
-    		// Change Z to +00:00 to adapt the string to a format
+            s = strVal.replace(".Z", ".+00:00");
+        } else {
+            // Change Z to +00:00 to adapt the string to a format
             // that can be parsed in Java
-    		s = strVal.replace("Z", ".+00:00");
-    	}
-    	     
+            s = strVal.replace("Z", ".+00:00");
+        }
+
         try {
             // Remove the ":" character to adapt the string to a
             // format
@@ -99,7 +99,7 @@ public class DateSerializer implements JsonSerializer<Date>, JsonDeserializer<Da
         }
 
         // Parse the well-formatted date string
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SSSZ");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SSSZ", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getDefault());
         Date date = dateFormat.parse(s);
 
