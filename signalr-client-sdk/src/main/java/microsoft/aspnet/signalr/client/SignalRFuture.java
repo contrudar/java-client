@@ -7,6 +7,7 @@ See License.txt in the project root for license information.
 package microsoft.aspnet.signalr.client;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -23,10 +24,10 @@ public class SignalRFuture<V> implements Future<V> {
     boolean mIsCancelled = false;
     boolean mIsDone = false;
     private V mResult = null;
-    private List<Runnable> mOnCancelled = new ArrayList<Runnable>();
-    private List<Action<V>> mOnDone = new ArrayList<Action<V>>();
+    private List<Runnable> mOnCancelled = Collections.synchronizedList(new ArrayList<Runnable>());
+    private List<Action<V>> mOnDone = Collections.synchronizedList(new ArrayList<Action<V>>());
     private Object mDoneLock = new Object();
-    private List<ErrorCallback> mErrorCallback = new ArrayList<ErrorCallback>();
+    private List<ErrorCallback> mErrorCallback = Collections.synchronizedList(new ArrayList<ErrorCallback>());
     private Queue<Throwable> mErrorQueue = new ConcurrentLinkedQueue<Throwable>();
     private Object mErrorLock = new Object();
     private Throwable mLastError = null;
@@ -35,9 +36,8 @@ public class SignalRFuture<V> implements Future<V> {
 
     /**
      * Handles the cancellation event
-     * 
-     * @param onCancelled
-     *            The handler
+     *
+     * @param onCancelled The handler
      */
     public void onCancelled(Runnable onCancelled) {
         mOnCancelled.add(onCancelled);
@@ -58,9 +58,8 @@ public class SignalRFuture<V> implements Future<V> {
 
     /**
      * Sets a result to the future and finishes its execution
-     * 
-     * @param result
-     *            The future result
+     *
+     * @param result The future result
      */
     public void setResult(V result) {
         synchronized (mDoneLock) {
@@ -83,7 +82,7 @@ public class SignalRFuture<V> implements Future<V> {
 
     /**
      * Indicates if the operation is cancelled
-     * 
+     *
      * @return True if the operation is cancelled
      */
     public boolean isCancelled() {
@@ -128,9 +127,8 @@ public class SignalRFuture<V> implements Future<V> {
     /**
      * Handles the completion of the Future. If the future was already
      * completed, it triggers the handler right away.
-     * 
-     * @param action
-     *            The handler
+     *
+     * @param action The handler
      */
     public SignalRFuture<V> done(Action<V> action) {
         synchronized (mDoneLock) {
@@ -152,9 +150,8 @@ public class SignalRFuture<V> implements Future<V> {
      * Handles error during the execution of the Future. If it's the first time
      * the method is invoked on the object and errors were already triggered,
      * the handler will be called once per error, right away.
-     * 
-     * @param errorCallback
-     *            The handler
+     *
+     * @param errorCallback The handler
      */
     public SignalRFuture<V> onError(ErrorCallback errorCallback) {
         synchronized (mErrorLock) {
@@ -172,9 +169,8 @@ public class SignalRFuture<V> implements Future<V> {
 
     /**
      * Triggers an error for the Future
-     * 
-     * @param error
-     *            The error
+     *
+     * @param error The error
      */
     public void triggerError(Throwable error) {
         synchronized (mErrorLock) {
@@ -189,10 +185,10 @@ public class SignalRFuture<V> implements Future<V> {
             }
         }
     }
-    
+
     /**
      * Indicates if an error was triggered
-     * 
+     *
      * @return True if an error was triggered
      */
     public boolean errorWasTriggered() {

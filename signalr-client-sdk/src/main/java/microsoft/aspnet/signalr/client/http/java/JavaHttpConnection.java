@@ -35,7 +35,6 @@ public class JavaHttpConnection implements HttpConnection {
 
     @Override
     public HttpConnectionFuture execute(final Request request, final ResponseCallback callback) {
-
         request.addHeader(USER_AGENT_HEADER, Platform.getUserAgent());
 
         mLogger.log("Create new thread for HTTP Connection", LogLevel.Verbose);

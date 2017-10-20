@@ -6,15 +6,17 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.transport;
 
+import com.bluelinelabs.logansquare.LoganSquare;
+
 import java.io.IOException;
 
-import microsoft.aspnet.signalr.client.FutureHelper;
-import microsoft.aspnet.signalr.client.SignalRFuture;
 import microsoft.aspnet.signalr.client.ConnectionBase;
 import microsoft.aspnet.signalr.client.Constants;
+import microsoft.aspnet.signalr.client.FutureHelper;
 import microsoft.aspnet.signalr.client.LogLevel;
 import microsoft.aspnet.signalr.client.Logger;
 import microsoft.aspnet.signalr.client.Platform;
+import microsoft.aspnet.signalr.client.SignalRFuture;
 import microsoft.aspnet.signalr.client.http.HttpConnection;
 import microsoft.aspnet.signalr.client.http.HttpConnectionFuture;
 import microsoft.aspnet.signalr.client.http.HttpConnectionFuture.ResponseCallback;
@@ -33,24 +35,25 @@ public abstract class HttpClientTransport implements ClientTransport {
     protected SignalRFuture<Void> mAbortFuture = null;
 
     private Logger mLogger;
+    protected final boolean allTrusted;
 
     /**
      * Initializes the HttpClientTransport with a logger
-     * 
-     * @param logger
-     *            logger to log actions
+     *
+     * @param logger logger to log actions
      */
-    public HttpClientTransport(Logger logger) {
-        this(logger, Platform.createHttpConnection(logger));
+    public HttpClientTransport(Logger logger, boolean allTrusted) {
+        this(logger, Platform.createHttpConnection(logger), allTrusted);
     }
 
-    public HttpClientTransport(Logger logger, HttpConnection httpConnection) {
+    public HttpClientTransport(Logger logger, HttpConnection httpConnection, boolean allTrusted) {
         if (logger == null) {
             throw new IllegalArgumentException("logger");
         }
 
         mHttpConnection = httpConnection;
         mLogger = logger;
+        this.allTrusted = allTrusted;
     }
 
     @Override
@@ -79,7 +82,7 @@ public abstract class HttpClientTransport implements ClientTransport {
                     String negotiationContent = response.readToEnd();
 
                     log("Trigger onSuccess with negotiation data: " + negotiationContent, LogLevel.Verbose);
-                    negotiationFuture.setResult(new NegotiationResponse(negotiationContent, connection.getJsonParser()));
+                    negotiationFuture.setResult(LoganSquare.parse(negotiationContent, NegotiationResponse.class));
 
                 } catch (Throwable e) {
                     log(e);

@@ -8,10 +8,6 @@ package microsoft.aspnet.signalr.client;
 
 import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-
 import microsoft.aspnet.signalr.client.http.Request;
 import microsoft.aspnet.signalr.client.transport.ClientTransport;
 
@@ -82,7 +78,7 @@ public interface ConnectionBase {
      */
     public void received(MessageReceivedHandler handler);
 
-    public void onReceived(JsonElement message);
+    public void onReceived(String message);
 
     /**
      * Sets the handler for the "ConnectionSlow" event
@@ -169,21 +165,6 @@ public interface ConnectionBase {
      * Returns the connection headers
      */
     Map<String, String> getHeaders();
-
-    /**
-     * Returns the Gson instance used by the connection
-     */
-    Gson getGson();
-
-    /**
-     * Sets the Gson instance used by the connection
-     */
-    void setGson(Gson gson);
-
-    /**
-     * Returns the JsonParser used by the connection
-     */
-    JsonParser getJsonParser();
 
     /**
      * Returns the Logger used by the connection

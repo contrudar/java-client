@@ -33,8 +33,8 @@ public class ServerSentEventsTransport extends HttpClientTransport {
      * @param logger
      *            Logger to log actions
      */
-    public ServerSentEventsTransport(Logger logger) {
-        super(logger);
+    public ServerSentEventsTransport(Logger logger, boolean isSsl) {
+        super(logger, isSsl);
     }
 
     /**
@@ -45,8 +45,8 @@ public class ServerSentEventsTransport extends HttpClientTransport {
      * @param httpConnection
      *            HttpConnection for the transport
      */
-    public ServerSentEventsTransport(Logger logger, HttpConnection httpConnection) {
-        super(logger, httpConnection);
+    public ServerSentEventsTransport(Logger logger, HttpConnection httpConnection, boolean isSsl) {
+        super(logger, httpConnection, isSsl);
     }
 
     @Override

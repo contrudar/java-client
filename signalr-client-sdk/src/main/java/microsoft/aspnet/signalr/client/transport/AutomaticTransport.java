@@ -28,19 +28,19 @@ public class AutomaticTransport extends HttpClientTransport {
 
     /**
      * Initializes the transport with a NullLogger
+     * @param isSsl
      */
-    public AutomaticTransport() {
-        this(new NullLogger());
+    public AutomaticTransport(final boolean isSsl) {
+        this(new NullLogger(), isSsl);
     }
 
     /**
      * Initializes the transport with a logger
-     * 
      * @param logger
      *            logger to log actions
      */
-    public AutomaticTransport(Logger logger) {
-        super(logger);
+    public AutomaticTransport(Logger logger, boolean isSsl) {
+        super(logger, isSsl);
         initialize(logger);
     }
 
@@ -52,16 +52,16 @@ public class AutomaticTransport extends HttpClientTransport {
      * @param httpConnection
      *            the httpConnection
      */
-    public AutomaticTransport(Logger logger, HttpConnection httpConnection) {
-        super(logger, httpConnection);
+    public AutomaticTransport(Logger logger, HttpConnection httpConnection, boolean isSsl) {
+        super(logger, httpConnection, isSsl);
         initialize(logger);
     }
 
     private void initialize(Logger logger) {
         mTransports = new ArrayList<ClientTransport>();
-        mTransports.add(new WebsocketTransport(logger));
-        mTransports.add(new ServerSentEventsTransport(logger));
-        mTransports.add(new LongPollingTransport(logger));
+        mTransports.add(new WebsocketTransport(logger, allTrusted));
+        mTransports.add(new ServerSentEventsTransport(logger, allTrusted));
+        mTransports.add(new LongPollingTransport(logger, allTrusted));
     }
 
     @Override
@@ -109,7 +109,7 @@ public class AutomaticTransport extends HttpClientTransport {
                     return;
                 }
 
-                log(String.format("Auto: Faild to connect using transport %s. %s", currentTransport.getName(), error.toString()), LogLevel.Information);
+                log(String.format("Auto: Failed to connect using transport %s. %s", currentTransport.getName(), error.toString()), LogLevel.Information);
                 int next = currentTransportIndex + 1;
                 if (next < mTransports.size()) {
                     resolveTransport(connection, connectionType, callback, next, startFuture);

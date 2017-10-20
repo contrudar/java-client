@@ -6,8 +6,10 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.hubs;
 
+import com.bluelinelabs.logansquare.LoganSquare;
+
+import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,8 +23,6 @@ import microsoft.aspnet.signalr.client.LogLevel;
 import microsoft.aspnet.signalr.client.Logger;
 import microsoft.aspnet.signalr.client.SignalRFuture;
 
-import com.google.gson.JsonElement;
-
 /**
  * Proxy for hub operations
  */
@@ -34,22 +34,19 @@ public class HubProxy {
 
     private Map<String, Subscription> mSubscriptions = Collections.synchronizedMap(new HashMap<String, Subscription>());
 
-    private Map<String, JsonElement> mState = Collections.synchronizedMap(new HashMap<String, JsonElement>());
+    private Map<String, String> mState = Collections.synchronizedMap(new HashMap<String, String>());
 
     private Logger mLogger;
 
-    private static final List<String> EXCLUDED_METHODS = Arrays.asList(new String[] { "equals", "getClass", "hashCode", "notify", "notifyAll", "toString",
-            "wait" });
+    private static final List<String> EXCLUDED_METHODS = Arrays.asList("equals", "getClass", "hashCode", "notify", "notifyAll", "toString", "wait");
 
     private static final String SUBSCRIPTION_HANDLER_METHOD = "run";
 
     /**
      * Initializes the HubProxy
-     * 
-     * @param connection
-     *            HubConnection to use
-     * @param hubName
-     *            Hub name
+     *
+     * @param connection HubConnection to use
+     * @param hubName    Hub name
      */
     protected HubProxy(HubConnection connection, String hubName, Logger logger) {
         mConnection = connection;
@@ -59,44 +56,38 @@ public class HubProxy {
 
     /**
      * Sets the state for a key
-     * 
-     * @param key
-     *            Key to set
-     * @param state
-     *            State to set
+     *
+     * @param key   Key to set
+     * @param state State to set
      */
-    public void setState(String key, JsonElement state) {
+    public void setState(String key, String state) {
         mState.put(key, state);
     }
 
     /**
      * Gets the state for a key
-     * 
-     * @param key
-     *            Key to get
+     *
+     * @param key Key to get
      */
-    public JsonElement getState(String key) {
+    public String getState(String key) {
         return mState.get(key);
     }
 
     /**
      * Gets the value for a key
-     * 
-     * @param key
-     *            Key to get
-     * @param clazz
-     *            Class used to to deserialize the value
+     *
+     * @param key   Key to get
+     * @param clazz Class used to to deserialize the value
      * @return
      */
-    public <E> E getValue(String key, Class<E> clazz) {
-        return mConnection.getGson().fromJson(getState(key), clazz);
+    public <E> E getValue(String key, Class<E> clazz) throws IOException {
+        return LoganSquare.parse(getState(key), clazz);
     }
 
     /**
      * Creates a subscription to an event
-     * 
-     * @param eventName
-     *            The name of the event
+     *
+     * @param eventName The name of the event
      * @return The subscription object
      */
     public Subscription subscribe(String eventName) {
@@ -122,9 +113,8 @@ public class HubProxy {
 
     /**
      * Create subscriptions for all the object methods
-     * 
-     * @param handler
-     *            Handler for the hub messages
+     *
+     * @param handler Handler for the hub messages
      */
     public void subscribe(final Object handler) {
         if (handler == null) {
@@ -138,10 +128,10 @@ public class HubProxy {
 
             if (!EXCLUDED_METHODS.contains(method.getName())) {
                 Subscription subscription = subscribe(method.getName());
-                subscription.addReceivedHandler(new Action<JsonElement[]>() {
+                subscription.addReceivedHandler(new Action<String[]>() {
 
                     @Override
-                    public void run(JsonElement[] eventParameters) throws Exception {
+                    public void run(String[] eventParameters) throws Exception {
                         log("Handling dynamic subscription: " + method.getName(), LogLevel.Verbose);
                         Class<?>[] parameterTypes = method.getParameterTypes();
                         if (parameterTypes.length != eventParameters.length) {
@@ -152,7 +142,7 @@ public class HubProxy {
                         Object[] parameters = new Object[parameterTypes.length];
 
                         for (int i = 0; i < eventParameters.length; i++) {
-                            parameters[i] = mConnection.getGson().fromJson(eventParameters[i], parameterTypes[i]);
+                            parameters[i] = LoganSquare.parse(eventParameters[i], parameterTypes[i]);
                         }
                         method.setAccessible(true);
                         log("Invoking method for dynamic subscription: " + method.getName(), LogLevel.Verbose);
@@ -165,39 +155,34 @@ public class HubProxy {
 
     /**
      * Removes all the subscriptions attached to an event
-     * 
-     * @param eventName
-     *            the event
+     *
+     * @param eventName the event
      */
     public void removeSubscription(String eventName) {
         if (eventName != null) {
-        	mSubscriptions.remove(eventName.toLowerCase(Locale.getDefault()));
+            mSubscriptions.remove(eventName.toLowerCase(Locale.getDefault()));
         }
     }
 
     /**
      * Invokes a hub method
-     * 
-     * @param method
-     *            Method name
-     * @param args
-     *            Method arguments
+     *
+     * @param method Method name
+     * @param args   Method arguments
      * @return A Future for the operation
      */
-    public SignalRFuture<Void> invoke(String method, Object... args) {
+    public SignalRFuture<Void> invoke(String method, Object... args) throws IOException {
         return invoke(null, method, args);
     }
 
     /**
      * Invokes a hub method that returns a value
-     * 
-     * @param method
-     *            Method name
-     * @param args
-     *            Method arguments
+     *
+     * @param method Method name
+     * @param args   Method arguments
      * @return A Future for the operation, that will return the method result
      */
-    public <E> SignalRFuture<E> invoke(final Class<E> resultClass, final String method, Object... args) {
+    public <E> SignalRFuture<E> invoke(final Class<E> resultClass, final String method, Object... args) throws IOException {
         if (method == null) {
             throw new IllegalArgumentException("method cannot be null");
         }
@@ -208,10 +193,10 @@ public class HubProxy {
 
         log("Invoking method on hub: " + method, LogLevel.Information);
 
-        JsonElement[] jsonArguments = new JsonElement[args.length];
+        String[] jsonArguments = new String[args.length];
 
         for (int i = 0; i < args.length; i++) {
-            jsonArguments[i] = mConnection.getGson().toJsonTree(args[i]);
+            jsonArguments[i] = LoganSquare.serialize(args[i]);
         }
 
         final SignalRFuture<E> resultFuture = new SignalRFuture<E>();
@@ -240,109 +225,7 @@ public class HubProxy {
 
                             if (result.getResult() != null && resultClass != null) {
                                 log("Found result invoking method on hub: " + result.getResult(), LogLevel.Information);
-                                resultObject = mConnection.getGson().fromJson(result.getResult(), resultClass);
-                            }
-                        } catch (Exception e) {
-                            errorHappened = true;
-                            resultFuture.triggerError(e);
-                        }
-
-                        if (!errorHappened) {
-                            try {
-                                resultFuture.setResult(resultObject);
-                            } catch (Exception e) {
-                                resultFuture.triggerError(e);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        HubInvocation hubData = new HubInvocation();
-        hubData.setHub(mHubName);
-        hubData.setMethod(method);
-        hubData.setArgs(jsonArguments);
-        hubData.setCallbackId(callbackId);
-
-        if (mState.size() != 0) {
-            hubData.setState(mState);
-        }
-
-        final SignalRFuture<Void> sendFuture = mConnection.send(hubData);
-
-        resultFuture.onCancelled(new Runnable() {
-
-            @Override
-            public void run() {
-                mConnection.removeCallback(callbackId);
-            }
-        });
-
-        resultFuture.onError(new ErrorCallback() {
-
-            @Override
-            public void onError(Throwable error) {
-                sendFuture.triggerError(error);
-            }
-        });
-
-        return resultFuture;
-    }
-    
-    /**
-     * Overload of 'invoke' hub method that takes a type instead of class for GSON deserialisation
-     * 
-     * @param method
-     *            Method name
-     * @param args
-     *            Method arguments
-     * @return A Future for the operation, that will return the method result
-     */
-    public <E> SignalRFuture<E> invoke(final Class<E> resultClass, final Type resultType, final String method, Object... args) {
-        if (method == null) {
-            throw new IllegalArgumentException("method cannot be null");
-        }
-
-        if (args == null) {
-            throw new IllegalArgumentException("args cannot be null");
-        }
-
-        log("Invoking method on hub: " + method, LogLevel.Information);
-
-        JsonElement[] jsonArguments = new JsonElement[args.length];
-
-        for (int i = 0; i < args.length; i++) {
-            jsonArguments[i] = mConnection.getGson().toJsonTree(args[i]);
-        }
-
-        final SignalRFuture<E> resultFuture = new SignalRFuture<E>();
-
-        final String callbackId = mConnection.registerCallback(new Action<HubResult>() {
-
-            @Override
-            public void run(HubResult result) {
-                log("Executing invocation callback for: " + method, LogLevel.Information);
-                if (result != null) {
-                    if (result.getError() != null) {
-                        if (result.isHubException()) {
-                            resultFuture.triggerError(new HubException(result.getError(), result.getErrorData()));
-                        } else {
-                            resultFuture.triggerError(new Exception(result.getError()));
-                        }
-                    } else {
-                        boolean errorHappened = false;
-                        E resultObject = null;
-                        try {
-                            if (result.getState() != null) {
-                                for (String key : result.getState().keySet()) {
-                                    setState(key, result.getState().get(key));
-                                }
-                            }
-
-                            if (result.getResult() != null && resultType != null) {
-                                log("Found result invoking method on hub: " + result.getResult(), LogLevel.Information);
-                                resultObject = mConnection.getGson().fromJson(result.getResult(), resultType);
+                                resultObject = LoganSquare.parse(result.getResult(), resultClass);
                             }
                         } catch (Exception e) {
                             errorHappened = true;
@@ -394,14 +277,12 @@ public class HubProxy {
 
     /**
      * Invokes a hub event with argument
-     * 
-     * @param eventName
-     *            The name of the event
-     * @param args
-     *            The event args
+     *
+     * @param eventName The name of the event
+     * @param args      The event args
      * @throws Exception
      */
-    void invokeEvent(String eventName, JsonElement[] args) throws Exception {
+    void invokeEvent(String eventName, String[] args) throws Exception {
         if (eventName == null) {
             throw new IllegalArgumentException("eventName cannot be null");
         }
@@ -420,10 +301,10 @@ public class HubProxy {
         }
 
         Subscription subscription = subscribe(eventName);
-        subscription.addReceivedHandler(new Action<JsonElement[]>() {
+        subscription.addReceivedHandler(new Action<String[]>() {
 
             @Override
-            public void run(JsonElement[] eventParameters) throws Exception {
+            public void run(String[] eventParameters) throws Exception {
                 Method method = null;
 
                 for (Method m : handler.getClass().getMethods()) {
@@ -440,7 +321,7 @@ public class HubProxy {
                 Object[] parameters = new Object[5];
 
                 for (int i = 0; i < eventParameters.length; i++) {
-                    parameters[i] = mConnection.getGson().fromJson(eventParameters[i], parameterTypes[i]);
+                    parameters[i] = LoganSquare.parse(eventParameters[i], parameterTypes[i]);
                 }
                 method.setAccessible(true);
                 method.invoke(handler, parameters);
@@ -449,7 +330,7 @@ public class HubProxy {
     }
 
     public <E1, E2, E3, E4, E5> void on(String eventName, final SubscriptionHandler5<E1, E2, E3, E4, E5> handler, Class<E1> parameter1, Class<E2> parameter2,
-            Class<E3> parameter3, Class<E4> parameter4, Class<E5> parameter5) {
+                                        Class<E3> parameter3, Class<E4> parameter4, Class<E5> parameter5) {
         on(eventName, new SubscriptionHandler5<E1, E2, E3, E4, E5>() {
 
             @Override
@@ -460,7 +341,7 @@ public class HubProxy {
     }
 
     public <E1, E2, E3, E4> void on(String eventName, final SubscriptionHandler4<E1, E2, E3, E4> handler, Class<E1> parameter1, Class<E2> parameter2,
-            Class<E3> parameter3, Class<E4> parameter4) {
+                                    Class<E3> parameter3, Class<E4> parameter4) {
         on(eventName, new SubscriptionHandler5<E1, E2, E3, E4, Void>() {
 
             @Override
@@ -471,7 +352,7 @@ public class HubProxy {
     }
 
     public <E1, E2, E3> void on(String eventName, final SubscriptionHandler3<E1, E2, E3> handler, Class<E1> parameter1, Class<E2> parameter2,
-            Class<E3> parameter3) {
+                                Class<E3> parameter3) {
         on(eventName, new SubscriptionHandler5<E1, E2, E3, Void, Void>() {
 
             @Override

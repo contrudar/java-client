@@ -6,15 +6,6 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-
-import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,32 +15,9 @@ import java.util.TimeZone;
 /**
  * Date Serializer/Deserializer to make .NET and Java dates compatible
  */
-public class DateSerializer implements JsonSerializer<Date>, JsonDeserializer<Date> {
+public class DateSerializer {
 
     private static final int THREE_MILLISECONDS_DATE_FORMAT_LENGTH = 29;
-
-    /**
-     * Deserializes a JsonElement containing an ISO-8601 formatted date
-     */
-    @Override
-    public Date deserialize(JsonElement element, Type type, JsonDeserializationContext ctx) throws JsonParseException {
-        String strVal = element.getAsString();
-
-        try {
-            return deserialize(strVal);
-        } catch (ParseException e) {
-            throw new JsonParseException(e);
-        }
-    }
-
-    /**
-     * Serializes a Date to a JsonElement containing a ISO-8601 formatted date
-     */
-    @Override
-    public JsonElement serialize(Date date, Type type, JsonSerializationContext ctx) {
-        JsonElement element = new JsonPrimitive(serialize(date));
-        return element;
-    }
 
     /**
      * Deserializes an ISO-8601 formatted date
@@ -95,7 +63,7 @@ public class DateSerializer implements JsonSerializer<Date>, JsonDeserializer<Da
 
             s = s.substring(0, 26) + s.substring(27);
         } catch (IndexOutOfBoundsException e) {
-            throw new JsonParseException("Invalid length for: " + s);
+            throw new IndexOutOfBoundsException("Invalid length for: " + s);
         }
 
         // Parse the well-formatted date string

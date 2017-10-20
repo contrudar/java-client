@@ -6,13 +6,13 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.transport;
 
-import microsoft.aspnet.signalr.client.ConnectionState;
-import microsoft.aspnet.signalr.client.ErrorCallback;
-import microsoft.aspnet.signalr.client.SignalRFuture;
 import microsoft.aspnet.signalr.client.ConnectionBase;
+import microsoft.aspnet.signalr.client.ConnectionState;
 import microsoft.aspnet.signalr.client.Constants;
+import microsoft.aspnet.signalr.client.ErrorCallback;
 import microsoft.aspnet.signalr.client.LogLevel;
 import microsoft.aspnet.signalr.client.Logger;
+import microsoft.aspnet.signalr.client.SignalRFuture;
 import microsoft.aspnet.signalr.client.UpdateableCancellableFuture;
 import microsoft.aspnet.signalr.client.http.HttpConnection;
 import microsoft.aspnet.signalr.client.http.HttpConnectionFuture;
@@ -29,24 +29,21 @@ public class LongPollingTransport extends HttpClientTransport {
 
     /**
      * Initializes the transport
-     * 
-     * @param logger
-     *            logger to log actions
+     *
+     * @param logger logger to log actions
      */
-    public LongPollingTransport(Logger logger) {
-        super(logger);
+    public LongPollingTransport(Logger logger, boolean isSsl) {
+        super(logger, isSsl);
     }
 
     /**
      * Initializes the transport with a logger
-     * 
-     * @param logger
-     *            Logger to log actions
-     * @param httpConnection
-     *            HttpConnection for the transport
+     *
+     * @param logger         Logger to log actions
+     * @param httpConnection HttpConnection for the transport
      */
-    public LongPollingTransport(Logger logger, HttpConnection httpConnection) {
-        super(logger, httpConnection);
+    public LongPollingTransport(Logger logger, HttpConnection httpConnection, boolean isSsl) {
+        super(logger, httpConnection, isSsl);
     }
 
     @Override
@@ -66,13 +63,10 @@ public class LongPollingTransport extends HttpClientTransport {
 
     /**
      * Polls the server
-     * 
-     * @param connection
-     *            the implemented connection
-     * @param connectionUrl
-     *            the connection action url
-     * @param callback
-     *            callback to invoke when data is received
+     *
+     * @param connection    the implemented connection
+     * @param connectionUrl the connection action url
+     * @param callback      callback to invoke when data is received
      * @return Future for the operation
      */
     private SignalRFuture<Void> poll(final ConnectionBase connection, final String connectionUrl, final DataResultCallback callback) {
@@ -98,7 +92,7 @@ public class LongPollingTransport extends HttpClientTransport {
                         try {
                             throwOnInvalidStatusCode(response);
 
-                            if (connectionUrl != "poll") {
+                            if (!connectionUrl.equals("poll")) {
                                 mConnectionFuture.setResult(null);
                             }
                             log("Response received", LogLevel.Verbose);

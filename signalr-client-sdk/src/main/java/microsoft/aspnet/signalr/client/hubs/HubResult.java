@@ -6,78 +6,80 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.hubs;
 
+import com.bluelinelabs.logansquare.annotation.JsonField;
+import com.bluelinelabs.logansquare.annotation.JsonObject;
+
 import java.util.Locale;
 import java.util.Map;
-
-import com.google.gson.JsonElement;
 
 /**
  * Represents the result of a hub operation
  */
+@JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.ANNOTATIONS_ONLY)
 public class HubResult {
-    @com.google.gson.annotations.SerializedName("I")
-    private String mId;
+    @JsonField(name = "I")
+    private String id;
 
-    @com.google.gson.annotations.SerializedName("R")
-    private JsonElement mResult;
+    @JsonField(name = "R")
+    private String result;
 
-    @com.google.gson.annotations.SerializedName("H")
-    private boolean mIsHubException;
+    @JsonField(name = "H")
+    private boolean hubException;
 
-    @com.google.gson.annotations.SerializedName("E")
-    private String mError;
+    @JsonField(name = "E")
+    private String error;
 
-    @com.google.gson.annotations.SerializedName("D")
-    private Object mErrorData;
+    @JsonField(name = "D")
+    private Object errorData;
 
-    @com.google.gson.annotations.SerializedName("S")
-    private Map<String, JsonElement> mState;
+    @JsonField(name = "S")
+    private Map<String, String> state;
 
     public String getId() {
-        return mId == null ? null : mId.toLowerCase(Locale.getDefault());
+        return id == null ? null : id.toLowerCase(Locale.getDefault());
     }
 
     public void setId(String id) {
-        mId = id;
+        this.id = id;
     }
 
-    public JsonElement getResult() {
-        return mResult;
+    public String getResult() {
+        return result;
     }
 
-    public void setResult(JsonElement result) {
-        mResult = result;
+    public void setResult(String result) {
+        this.result = result;
     }
 
     public boolean isHubException() {
-        return mIsHubException;
+        return hubException;
     }
 
-    public void setIsHubException(boolean isHubException) {
-        mIsHubException = isHubException;
+    public void setHubException(boolean isHubException) {
+        this.hubException = isHubException;
     }
 
     public String getError() {
-        return mError;
+        return error;
     }
 
     public void setError(String error) {
-        mError = error;
+        this.error = error;
     }
 
     public Object getErrorData() {
-        return mErrorData;
+        return errorData;
     }
 
     public void setErrorData(Object errorData) {
-        mErrorData = errorData;
+        this.errorData = errorData;
     }
 
-    public Map<String, JsonElement> getState() {
-        return mState;
+    public Map<String, String> getState() {
+        return state;
     }
 
-    public void setState(Map<String, JsonElement> state) {
-        mState = state;
+    public void setState(Map<String, String> state) {
+        this.state = state;
     }
 }

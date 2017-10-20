@@ -11,14 +11,12 @@ import java.util.List;
 
 import microsoft.aspnet.signalr.client.Action;
 
-import com.google.gson.JsonElement;
-
 /**
  * Represents a subscription to a message
  */
 public class Subscription {
 
-    private List<Action<JsonElement[]>> mReceived = new ArrayList<Action<JsonElement[]>>();
+    private List<Action<String[]>> mReceived = new ArrayList<Action<String[]>>();
 
     /**
      * Triggers the "Received" event
@@ -27,8 +25,8 @@ public class Subscription {
      *            Event data
      * @throws Exception
      */
-    void onReceived(JsonElement[] data) throws Exception {
-        for (Action<JsonElement[]> handler : mReceived) {
+    void onReceived(String[] data) throws Exception {
+        for (Action<String[]> handler : mReceived) {
             handler.run(data);
         }
     }
@@ -39,7 +37,7 @@ public class Subscription {
      * @param received
      *            Event handler
      */
-    public void addReceivedHandler(Action<JsonElement[]> received) {
+    public void addReceivedHandler(Action<String[]> received) {
         mReceived.add(received);
     }
 }

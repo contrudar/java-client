@@ -6,25 +6,27 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.hubs;
 
+import com.bluelinelabs.logansquare.annotation.JsonField;
+import com.bluelinelabs.logansquare.annotation.JsonObject;
+
 import java.util.Map;
 
-import com.google.gson.JsonElement;
-
+@JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.ANNOTATIONS_ONLY)
 public class HubInvocation {
-    @com.google.gson.annotations.SerializedName("I")
+    @JsonField(name = "I")
     private String mCallbackId;
 
-    @com.google.gson.annotations.SerializedName("H")
+    @JsonField(name = "H")
     private String mHub;
 
-    @com.google.gson.annotations.SerializedName("M")
+    @JsonField(name = "M")
     private String mMethod;
 
-    @com.google.gson.annotations.SerializedName("A")
-    private JsonElement[] mArgs;
+    @JsonField(name = "A")
+    private String[] mArgs;
 
-    @com.google.gson.annotations.SerializedName("S")
-    private Map<String, JsonElement> mState;
+    @JsonField(name = "S")
+    private Map<String, String> mState;
 
     public String getCallbackId() {
         return mCallbackId;
@@ -50,19 +52,19 @@ public class HubInvocation {
         mMethod = method;
     }
 
-    public JsonElement[] getArgs() {
+    public String[] getArgs() {
         return mArgs;
     }
 
-    public void setArgs(JsonElement[] args) {
+    public void setArgs(String[] args) {
         mArgs = args;
     }
 
-    public Map<String, JsonElement> getState() {
+    public Map<String, String> getState() {
         return mState;
     }
 
-    public void setState(Map<String, JsonElement> state) {
+    public void setState(Map<String, String> state) {
         mState = state;
     }
 }

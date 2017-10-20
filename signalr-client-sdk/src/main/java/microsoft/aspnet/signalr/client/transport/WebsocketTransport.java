@@ -6,18 +6,21 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.transport;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-
-import com.google.gson.Gson;
+import com.bluelinelabs.logansquare.LoganSquare;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.exceptions.InvalidDataException;
 import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.util.Charsetfunctions;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 
 import microsoft.aspnet.signalr.client.ConnectionBase;
 import microsoft.aspnet.signalr.client.LogLevel;
@@ -33,16 +36,15 @@ import microsoft.aspnet.signalr.client.http.HttpConnection;
 public class WebsocketTransport extends HttpClientTransport {
 
     private String mPrefix;
-    private static final Gson gson = new Gson();
-    WebSocketClient mWebSocketClient;
+    private WebSocketClient mWebSocketClient;
     private UpdateableCancellableFuture<Void> mConnectionFuture;
 
-    public WebsocketTransport(Logger logger) {
-        super(logger);
+    public WebsocketTransport(Logger logger, boolean allTrusted) {
+        super(logger, allTrusted);
     }
 
-    public WebsocketTransport(Logger logger, HttpConnection httpConnection) {
-        super(logger, httpConnection);
+    public WebsocketTransport(Logger logger, HttpConnection httpConnection, boolean allTrusted) {
+        super(logger, httpConnection, allTrusted);
     }
 
     @Override
@@ -65,7 +67,6 @@ public class WebsocketTransport extends HttpClientTransport {
         final String groupsToken = connection.getGroupsToken() != null ? connection.getGroupsToken() : "";
         final String connectionData = connection.getConnectionData() != null ? connection.getConnectionData() : "";
 
-
         String url = null;
         try {
             url = connection.getUrl() + "signalr/" + connectionString + '?'
@@ -74,6 +75,14 @@ public class WebsocketTransport extends HttpClientTransport {
                     + "&groupsToken=" + URLEncoder.encode(groupsToken, "UTF-8")
                     + "&messageId=" + URLEncoder.encode(messageId, "UTF-8")
                     + "&transport=" + URLEncoder.encode(transport, "UTF-8");
+            if (connection.getQueryString() != null) {
+                url += "&" + connection.getQueryString();
+            }
+            if (url.startsWith("https://")) {
+                url = url.replace("https://", "wss://");
+            } else if (url.startsWith("http://")) {
+                url = url.replace("http://", "ws://");
+            }
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -108,6 +117,7 @@ public class WebsocketTransport extends HttpClientTransport {
             @Override
             public void onError(Exception e) {
                 mWebSocketClient.close();
+                mConnectionFuture.triggerError(e);
             }
 
             @Override
@@ -115,20 +125,20 @@ public class WebsocketTransport extends HttpClientTransport {
                 try {
                     String decodedString = Charsetfunctions.stringUtf8(frame.getPayloadData());
 
-                    if(decodedString.equals("]}")){
+                    if (decodedString.equals("]}")) {
                         return;
                     }
 
-                    if(decodedString.endsWith(":[") || null == mPrefix){
+                    if (decodedString.endsWith(":[") || null == mPrefix) {
                         mPrefix = decodedString;
                         return;
                     }
 
                     String simpleConcatenate = mPrefix + decodedString;
 
-                    if(isJSONValid(simpleConcatenate)){
+                    if (isJSONValid(simpleConcatenate)) {
                         onMessage(simpleConcatenate);
-                    }else{
+                    } else {
                         String extendedConcatenate = simpleConcatenate + "]}";
                         if (isJSONValid(extendedConcatenate)) {
                             onMessage(extendedConcatenate);
@@ -141,6 +151,37 @@ public class WebsocketTransport extends HttpClientTransport {
                 }
             }
         };
+        if (allTrusted && url.startsWith("wss://")) {
+            try {
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, null, null); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
+
+                SSLSocketFactory factory = sslContext.getSocketFactory();
+
+//                SSLContext sslContext = SSLContext.getInstance("SSL");
+//
+//                sslContext.init(null, new X509TrustManager[]{new X509TrustManager() {
+//                    @Override
+//                    public void checkClientTrusted(final java.security.cert.X509Certificate[] chain, final String authType) throws CertificateException {
+//
+//                    }
+//
+//                    @Override
+//                    public void checkServerTrusted(final java.security.cert.X509Certificate[] chain, final String authType) throws CertificateException {
+//
+//                    }
+//
+//                    @Override
+//                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+//                        return new java.security.cert.X509Certificate[]{};
+//                    }
+//
+//                }}, new SecureRandom());
+                mWebSocketClient.setSocket(factory.createSocket());
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
         mWebSocketClient.connect();
 
         connection.closed(new Runnable() {
@@ -159,12 +200,13 @@ public class WebsocketTransport extends HttpClientTransport {
         return new UpdateableCancellableFuture<Void>(null);
     }
 
-    private boolean isJSONValid(String test){
+    private boolean isJSONValid(String test) {
         try {
-            gson.fromJson(test, Object.class);
+            LoganSquare.parse(test, Object.class);
             return true;
-        } catch(com.google.gson.JsonSyntaxException ex) {
+        } catch (Exception ex) {
             return false;
         }
     }
+
 }

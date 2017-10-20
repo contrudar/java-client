@@ -6,106 +6,89 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.transport;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.bluelinelabs.logansquare.annotation.JsonField;
+import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 /**
  * Represents the negotiation response sent by the server in the handshake
  */
+@JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.ANNOTATIONS_ONLY)
 public class NegotiationResponse {
     public static final double INVALID_KEEP_ALIVE_TIMEOUT = -1;
 
-    private String mConnectionId;
-    private String mConnectionToken;
-    private String mUrl;
-    private String mProtocolVersion;
-    private double mDisconnectTimeout;
-    private boolean mTryWebSockets;
-    private double mKeepAliveTimeout;
-
-    /**
-     * Initializes the negotiation response with Json data
-     * 
-     * @param jsonContent
-     *            Json data
-     */
-    public NegotiationResponse(String jsonContent, JsonParser parser) {
-        if (jsonContent == null || "".equals(jsonContent)) {
-            return;
-        }
-
-        JsonObject json = parser.parse(jsonContent).getAsJsonObject();
-
-        setConnectionId(json.get("ConnectionId").getAsString());
-        setConnectionToken(json.get("ConnectionToken").getAsString());
-        setUrl(json.get("Url").getAsString());
-        setProtocolVersion(json.get("ProtocolVersion").getAsString());
-        setDisconnectTimeout(json.get("DisconnectTimeout").getAsDouble());
-        setTryWebSockets(json.get("TryWebSockets").getAsBoolean());
-
-        JsonElement keepAliveElement = json.get("KeepAliveTimeout");
-        if (keepAliveElement != null && !keepAliveElement.isJsonNull()) {
-            setKeepAliveTimeout(keepAliveElement.getAsDouble());
-        } else {
-            setKeepAliveTimeout(INVALID_KEEP_ALIVE_TIMEOUT);
-        }
-
-    }
+    @JsonField(name = "ConnectionId")
+    private String connectionId;
+    @JsonField(name = "ConnectionToken")
+    private String connectionToken;
+    @JsonField(name = "Url")
+    private String url;
+    @JsonField(name = "ProtocolVersion")
+    private String protocolVersion;
+    @JsonField(name = "DisconnectTimeout")
+    private double disconnectTimeout;
+    @JsonField(name = "TryWebSockets")
+    private boolean tryWebSockets;
+    @JsonField(name = "KeepAliveTimeout")
+    private double keepAliveTimeout;
 
     public String getConnectionId() {
-        return mConnectionId;
+        return connectionId;
     }
 
     public void setConnectionId(String connectionId) {
-        mConnectionId = connectionId;
+        this.connectionId = connectionId;
     }
 
     public String getConnectionToken() {
-        return mConnectionToken;
+        return connectionToken;
     }
 
     public void setConnectionToken(String connectionToken) {
-        mConnectionToken = connectionToken;
+        this.connectionToken = connectionToken;
     }
 
     public String getUrl() {
-        return mUrl;
+        return url;
     }
 
     public void setUrl(String url) {
-        mUrl = url;
+        this.url = url;
     }
 
     public String getProtocolVersion() {
-        return mProtocolVersion;
+        return protocolVersion;
     }
 
     public void setProtocolVersion(String protocolVersion) {
-        mProtocolVersion = protocolVersion;
+        this.protocolVersion = protocolVersion;
     }
 
     public double getDisconnectTimeout() {
-        return mDisconnectTimeout;
+        return disconnectTimeout;
     }
 
     public void setDisconnectTimeout(double disconnectTimeout) {
-        mDisconnectTimeout = disconnectTimeout;
+        this.disconnectTimeout = disconnectTimeout;
     }
 
-    public boolean shouldTryWebSockets() {
-        return mTryWebSockets;
+    public boolean isTryWebSockets() {
+        return tryWebSockets;
     }
 
     public void setTryWebSockets(boolean tryWebSockets) {
-        mTryWebSockets = tryWebSockets;
+        this.tryWebSockets = tryWebSockets;
     }
 
     public double getKeepAliveTimeout() {
-        return mKeepAliveTimeout;
+        return keepAliveTimeout;
+//        if (keepAliveTimeout != null) {
+//            return keepAliveTimeout;
+//        } else {
+//            return INVALID_KEEP_ALIVE_TIMEOUT;
+//        }
     }
 
     public void setKeepAliveTimeout(double keepAliveTimeout) {
-        mKeepAliveTimeout = keepAliveTimeout;
+        this.keepAliveTimeout = keepAliveTimeout;
     }
 }
