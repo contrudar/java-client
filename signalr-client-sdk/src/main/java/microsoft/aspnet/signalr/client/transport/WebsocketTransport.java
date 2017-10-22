@@ -69,7 +69,7 @@ public class WebsocketTransport extends HttpClientTransport {
 
         String url = null;
         try {
-            url = connection.getUrl() + "signalr/" + connectionString + '?'
+            url = connection.getUrl() + connectionString + '?'
                     + "connectionData=" + URLEncoder.encode(URLEncoder.encode(connectionData, "UTF-8"), "UTF-8")
                     + "&connectionToken=" + URLEncoder.encode(URLEncoder.encode(connectionToken, "UTF-8"), "UTF-8")
                     + "&groupsToken=" + URLEncoder.encode(groupsToken, "UTF-8")
@@ -157,26 +157,6 @@ public class WebsocketTransport extends HttpClientTransport {
                 sslContext.init(null, null, null); // will use java's default key and trust store which is sufficient unless you deal with self-signed certificates
 
                 SSLSocketFactory factory = sslContext.getSocketFactory();
-
-//                SSLContext sslContext = SSLContext.getInstance("SSL");
-//
-//                sslContext.init(null, new X509TrustManager[]{new X509TrustManager() {
-//                    @Override
-//                    public void checkClientTrusted(final java.security.cert.X509Certificate[] chain, final String authType) throws CertificateException {
-//
-//                    }
-//
-//                    @Override
-//                    public void checkServerTrusted(final java.security.cert.X509Certificate[] chain, final String authType) throws CertificateException {
-//
-//                    }
-//
-//                    @Override
-//                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-//                        return new java.security.cert.X509Certificate[]{};
-//                    }
-//
-//                }}, new SecureRandom());
                 mWebSocketClient.setSocket(factory.createSocket());
             } catch (Exception e1) {
                 e1.printStackTrace();
