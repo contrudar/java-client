@@ -6,6 +6,8 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client;
 
+import org.json.JSONObject;
+
 import java.util.Map;
 
 import microsoft.aspnet.signalr.client.http.Request;
@@ -78,7 +80,7 @@ public interface ConnectionBase {
      */
     public void received(MessageReceivedHandler handler);
 
-    public void onReceived(String message);
+    public void onReceived(JSONObject message);
 
     /**
      * Sets the handler for the "ConnectionSlow" event

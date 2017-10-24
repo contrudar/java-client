@@ -16,7 +16,7 @@ import microsoft.aspnet.signalr.client.Action;
  */
 public class Subscription {
 
-    private List<Action<String[]>> mReceived = new ArrayList<Action<String[]>>();
+    private List<Action<Object[]>> mReceived = new ArrayList<Action<Object[]>>();
 
     /**
      * Triggers the "Received" event
@@ -25,8 +25,8 @@ public class Subscription {
      *            Event data
      * @throws Exception
      */
-    void onReceived(String[] data) throws Exception {
-        for (Action<String[]> handler : mReceived) {
+    void onReceived(Object[] data) throws Exception {
+        for (Action<Object[]> handler : mReceived) {
             handler.run(data);
         }
     }
@@ -37,7 +37,7 @@ public class Subscription {
      * @param received
      *            Event handler
      */
-    public void addReceivedHandler(Action<String[]> received) {
+    public void addReceivedHandler(Action<Object[]> received) {
         mReceived.add(received);
     }
 }

@@ -8,6 +8,8 @@ package microsoft.aspnet.signalr.client;
 
 import com.bluelinelabs.logansquare.LoganSquare;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -713,7 +715,7 @@ public class Connection implements ConnectionBase {
      * @throws Exception An exception could be thrown if there an error while
      *                   processing the message
      */
-    protected String processMessage(String message) throws Exception {
+    protected JSONObject processMessage(JSONObject message) throws Exception {
         return message;
     }
 
@@ -774,7 +776,7 @@ public class Connection implements ConnectionBase {
     }
 
     @Override
-    public void onReceived(String message) {
+    public void onReceived(JSONObject message) {
         if (mOnReceived != null && getState() == ConnectionState.Connected) {
             log("Invoking messageReceived with: " + message, LogLevel.Verbose);
             try {

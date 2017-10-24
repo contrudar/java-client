@@ -52,7 +52,7 @@ public class TransportHelper {
         try {
             if (json.has("I")) {
                 logger.log("Invoking message received with: " + data, LogLevel.Verbose);
-                connection.onReceived(data);
+                connection.onReceived(new JSONObject(data));
             } else {
                 // disconnected
                 if (json.has("D")) {
@@ -94,7 +94,7 @@ public class TransportHelper {
                             JSONObject message = messagesArray.getJSONObject(i);
 
                             logger.log("Invoking OnReceived with: " + message.toString(), LogLevel.Verbose);
-                            connection.onReceived(message.toString());
+                            connection.onReceived(message);
                         }
                     }
                 }
@@ -107,7 +107,7 @@ public class TransportHelper {
                 }
             }
         } catch (Exception ex) {
-            connection.onReceived(data);
+            connection.onError(ex, false);
         }
 
         return result;

@@ -8,6 +8,8 @@ package microsoft.aspnet.signalr.client.hubs;
 
 import com.bluelinelabs.logansquare.LoganSquare;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -22,6 +24,8 @@ import microsoft.aspnet.signalr.client.ErrorCallback;
 import microsoft.aspnet.signalr.client.LogLevel;
 import microsoft.aspnet.signalr.client.Logger;
 import microsoft.aspnet.signalr.client.SignalRFuture;
+
+import static com.bluelinelabs.logansquare.LoganSquare.parse;
 
 /**
  * Proxy for hub operations
@@ -81,7 +85,7 @@ public class HubProxy {
      * @return
      */
     public <E> E getValue(String key, Class<E> clazz) throws IOException {
-        return LoganSquare.parse(getState(key), clazz);
+        return parse(getState(key), clazz);
     }
 
     /**
@@ -128,10 +132,10 @@ public class HubProxy {
 
             if (!EXCLUDED_METHODS.contains(method.getName())) {
                 Subscription subscription = subscribe(method.getName());
-                subscription.addReceivedHandler(new Action<String[]>() {
+                subscription.addReceivedHandler(new Action<Object[]>() {
 
                     @Override
-                    public void run(String[] eventParameters) throws Exception {
+                    public void run(Object[] eventParameters) throws Exception {
                         log("Handling dynamic subscription: " + method.getName(), LogLevel.Verbose);
                         Class<?>[] parameterTypes = method.getParameterTypes();
                         if (parameterTypes.length != eventParameters.length) {
@@ -142,7 +146,12 @@ public class HubProxy {
                         Object[] parameters = new Object[parameterTypes.length];
 
                         for (int i = 0; i < eventParameters.length; i++) {
-                            parameters[i] = LoganSquare.parse(eventParameters[i], parameterTypes[i]);
+                            final Object eventParameter = eventParameters[i];
+                            if (eventParameter instanceof HashMap) {
+                                parameters[i] = LoganSquare.parse(new JSONObject((HashMap) eventParameter).toString(), parameterTypes[i]);
+                            } else if (eventParameter instanceof String) {
+                                parameters[i] = LoganSquare.parse(new JSONObject((String) eventParameter).toString(), parameterTypes[i]);
+                            }
                         }
                         method.setAccessible(true);
                         log("Invoking method for dynamic subscription: " + method.getName(), LogLevel.Verbose);
@@ -225,7 +234,7 @@ public class HubProxy {
 
                             if (result.getResult() != null && resultClass != null) {
                                 log("Found result invoking method on hub: " + result.getResult(), LogLevel.Information);
-                                resultObject = LoganSquare.parse(result.getResult(), resultClass);
+                                resultObject = parse(result.getResult(), resultClass);
                             }
                         } catch (Exception e) {
                             errorHappened = true;
@@ -282,7 +291,7 @@ public class HubProxy {
      * @param args      The event args
      * @throws Exception
      */
-    void invokeEvent(String eventName, String[] args) throws Exception {
+    void invokeEvent(String eventName, Object[] args) throws Exception {
         if (eventName == null) {
             throw new IllegalArgumentException("eventName cannot be null");
         }
@@ -301,10 +310,10 @@ public class HubProxy {
         }
 
         Subscription subscription = subscribe(eventName);
-        subscription.addReceivedHandler(new Action<String[]>() {
+        subscription.addReceivedHandler(new Action<Object[]>() {
 
             @Override
-            public void run(String[] eventParameters) throws Exception {
+            public void run(Object[] eventParameters) throws Exception {
                 Method method = null;
 
                 for (Method m : handler.getClass().getMethods()) {
@@ -313,15 +322,23 @@ public class HubProxy {
                         break;
                     }
                 }
+                if (method == null) {
+                    return;
+                }
 
                 if (parameterTypes.length != eventParameters.length) {
                     throw new RuntimeException("The handler has " + parameterTypes.length + " parameters, but there are " + eventParameters.length + " values.");
                 }
 
                 Object[] parameters = new Object[5];
-
                 for (int i = 0; i < eventParameters.length; i++) {
-                    parameters[i] = LoganSquare.parse(eventParameters[i], parameterTypes[i]);
+                    final Object eventParameter = eventParameters[i];
+                    if (eventParameter instanceof HashMap) {
+                        final String jsonString = new JSONObject((HashMap) eventParameter).toString();
+                        parameters[i] = LoganSquare.parse(jsonString, parameterTypes[i]);
+                    } else if (eventParameter instanceof String) {
+                        parameters[i] = LoganSquare.parse(new JSONObject((String) eventParameter).toString(), parameterTypes[i]);
+                    }
                 }
                 method.setAccessible(true);
                 method.invoke(handler, parameters);

@@ -52,7 +52,7 @@ public class HubConnection extends Connection {
      * @param useDefaultUrl indicates if the default SignalR URL should be used
      * @param logger        The connection logger
      */
-    public HubConnection(String url,  boolean useDefaultUrl, Logger logger, boolean isSsl) {
+    public HubConnection(String url, boolean useDefaultUrl, Logger logger, boolean isSsl) {
         super(getUrl(url, useDefaultUrl), logger, isSsl);
     }
 
@@ -80,15 +80,15 @@ public class HubConnection extends Connection {
     }
 
     @Override
-    public void onReceived(String message) {
+    public void onReceived(JSONObject message) {
         super.onReceived(message);
 
         log("Processing message", LogLevel.Information);
         if (getState() == ConnectionState.Connected) {
             try {
-                if (new JSONObject(message).has("I")) {
+                if (message.has("I")) {
                     log("Getting HubResult from message", LogLevel.Verbose);
-                    HubResult result = LoganSquare.parse(message, HubResult.class);
+                    HubResult result = LoganSquare.parse(message.toString(), HubResult.class);
 
                     String id = result.getId().toLowerCase(Locale.getDefault());
                     log("Result Id: " + id, LogLevel.Verbose);
@@ -106,7 +106,7 @@ public class HubConnection extends Connection {
                         }
                     }
                 } else {
-                    HubInvocation invocation = LoganSquare.parse(message, HubInvocation.class);
+                    HubInvocation invocation = LoganSquare.parse(message.toString(), HubInvocation.class);
                     log("Getting HubInvocation from message", LogLevel.Verbose);
 
                     String hubName = invocation.getHub().toLowerCase(Locale.getDefault());
@@ -138,7 +138,7 @@ public class HubConnection extends Connection {
         }
     }
 
-    private static String arrayToString(String[] args) {
+    private static String arrayToString(Object[] args) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("[");
@@ -148,7 +148,7 @@ public class HubConnection extends Connection {
                 sb.append(", ");
             }
 
-            sb.append(args[i]);
+            sb.append(args[i].toString());
         }
 
         sb.append("]");

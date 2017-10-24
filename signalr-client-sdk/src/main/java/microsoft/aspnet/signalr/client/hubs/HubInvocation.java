@@ -23,7 +23,7 @@ public class HubInvocation {
     private String mMethod;
 
     @JsonField(name = "A")
-    private String[] mArgs;
+    private Object[] mArgs;
 
     @JsonField(name = "S")
     private Map<String, String> mState;
@@ -52,11 +52,11 @@ public class HubInvocation {
         mMethod = method;
     }
 
-    public String[] getArgs() {
+    public Object[] getArgs() {
         return mArgs;
     }
 
-    public void setArgs(String[] args) {
+    public void setArgs(Object[] args) {
         mArgs = args;
     }
 
