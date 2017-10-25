@@ -6,6 +6,8 @@ See License.txt in the project root for license information.
 
 package microsoft.aspnet.signalr.client.http.java;
 
+import android.annotation.SuppressLint;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -33,6 +35,7 @@ import microsoft.aspnet.signalr.client.http.StreamResponse;
 /**
  * Runnable that executes a network operation
  */
+@SuppressLint("BadHostnameVerifier")
 class NetworkRunnable implements Runnable {
 
     HttpURLConnection mConnection = null;
