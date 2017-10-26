@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '25.0.3'
+    buildToolsVersion '26.0.2'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -13,10 +13,16 @@ android {
         minSdkVersion 9
         targetSdkVersion 26
     }
+
+    buildTypes {
+        debug {}
+        release {}
+        androidtest{}
+    }
 }
 
 dependencies {
-    provided "com.bluelinelabs:logansquare:$loganSquareVersion"
+    compileOnly "com.bluelinelabs:logansquare:$loganSquareVersion"
     annotationProcessor "com.bluelinelabs:logansquare-compiler:$loganSquareVersion"
-    compile 'org.java-websocket:Java-WebSocket:1.3.5'
+    implementation 'org.java-websocket:Java-WebSocket:1.3.5'
 }
