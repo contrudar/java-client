@@ -21,8 +21,8 @@ import java.util.concurrent.TimeoutException;
  * Represents long running SignalR operations
  */
 public class SignalRFuture<V> implements Future<V> {
-    boolean mIsCancelled = false;
-    boolean mIsDone = false;
+    private boolean mIsCancelled = false;
+    private boolean mIsDone = false;
     private V mResult = null;
     private List<Runnable> mOnCancelled = Collections.synchronizedList(new ArrayList<Runnable>());
     private List<Action<V>> mOnDone = Collections.synchronizedList(new ArrayList<Action<V>>());

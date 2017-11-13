@@ -14,10 +14,29 @@ android {
         targetSdkVersion 27
     }
 
+    flavorDimensions "proguardSettings"
+    productFlavors {
+        noObfuscate {
+            dimension "proguardSettings"
+            proguardFile file("proguard/proguard-debug.cfg")
+        }
+
+        obfuscate {
+            dimension "proguardSettings"
+            proguardFile file("proguard/proguard-release.cfg")
+        }
+    }
+
     buildTypes {
-        debug {}
-        release {}
-        androidtest{}
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled true
+        }
+        androidtest{
+            minifyEnabled true
+        }
     }
 }
 
