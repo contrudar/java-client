@@ -107,6 +107,7 @@ public class HubConnection extends Connection {
                     }
                 } else {
                     HubInvocation invocation = LoganSquare.parse(message.toString(), HubInvocation.class);
+
                     log("Getting HubInvocation from message", LogLevel.Verbose);
 
                     String hubName = invocation.getHub().toLowerCase(Locale.getDefault());
@@ -123,10 +124,15 @@ public class HubConnection extends Connection {
                         }
 
                         String eventName = invocation.getMethod().toLowerCase(Locale.getDefault());
-                        log("Invoking event: " + eventName + " with arguments " + arrayToString(invocation.getArgs()), LogLevel.Verbose);
+                        log("Invoking event: " + eventName + " with arguments " + invocation.getArgs(), LogLevel.Verbose);
 
                         try {
-                            hubProxy.invokeEvent(eventName, invocation.getArgs());
+                            JSONArray args = message.getJSONArray("A");
+                            String[] argsResult = new String[args.length()];
+                            for (int i = 0; i < args.length(); i++) {
+                                argsResult[i] = args.getJSONObject(i).toString();
+                            }
+                            hubProxy.invokeEvent(eventName, argsResult);
                         } catch (Exception e) {
                             onError(e, false);
                         }
@@ -137,25 +143,6 @@ public class HubConnection extends Connection {
             }
         }
     }
-
-    private static String arrayToString(Object[] args) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("[");
-
-        for (int i = 0; i < args.length; i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-
-            sb.append(args[i].toString());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
 
     @Override
     public String getConnectionData() {

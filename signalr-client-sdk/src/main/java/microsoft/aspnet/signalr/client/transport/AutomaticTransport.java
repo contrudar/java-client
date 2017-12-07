@@ -59,7 +59,7 @@ public class AutomaticTransport extends HttpClientTransport {
 
     private void initialize(Logger logger) {
         mTransports = new ArrayList<ClientTransport>();
-        mTransports.add(new WebsocketTransport(logger, allTrusted));
+        //mTransports.add(new WebsocketTransport(logger, allTrusted));
         mTransports.add(new ServerSentEventsTransport(logger, allTrusted));
         mTransports.add(new LongPollingTransport(logger, allTrusted));
     }

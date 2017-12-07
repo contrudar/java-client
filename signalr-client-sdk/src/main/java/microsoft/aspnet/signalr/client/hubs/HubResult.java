@@ -17,21 +17,17 @@ import java.util.Map;
  */
 @JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.ANNOTATIONS_ONLY)
 public class HubResult {
+
     @JsonField(name = "I")
     private String id;
-
     @JsonField(name = "R")
     private String result;
-
     @JsonField(name = "H")
     private boolean hubException;
-
     @JsonField(name = "E")
     private String error;
-
     @JsonField(name = "D")
     private Object errorData;
-
     @JsonField(name = "S")
     private Map<String, String> state;
 

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import microsoft.aspnet.signalr.client.http.Request;
+import microsoft.aspnet.signalr.client.hubs.HubInvocation;
 import microsoft.aspnet.signalr.client.transport.AutomaticTransport;
 import microsoft.aspnet.signalr.client.transport.ClientTransport;
 import microsoft.aspnet.signalr.client.transport.ConnectionType;
@@ -261,8 +262,10 @@ public class Connection implements ConnectionBase {
         if (object != null) {
             if (object instanceof String) {
                 data = (String) object;
-            } else {
+            } else if (object instanceof HubInvocation) {
+                final HubInvocation hubInvocation = (HubInvocation) object;
                 data = LoganSquare.serialize(object);
+                data = data.replace("{", "{\"A\":" + hubInvocation.getArgs() + ",");
             }
         }
 

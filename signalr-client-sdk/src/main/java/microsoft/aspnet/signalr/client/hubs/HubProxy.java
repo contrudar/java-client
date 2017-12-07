@@ -202,11 +202,16 @@ public class HubProxy {
 
         log("Invoking method on hub: " + method, LogLevel.Information);
 
-        String[] jsonArguments = new String[args.length];
+        StringBuilder argsResult = new StringBuilder("[");
 
         for (int i = 0; i < args.length; i++) {
-            jsonArguments[i] = LoganSquare.serialize(args[i]);
+            argsResult.append(LoganSquare.serialize(args[i]));
+            if (i != args.length - 1) {
+                argsResult.append(",");
+            }
         }
+
+        argsResult.append("]");
 
         final SignalRFuture<E> resultFuture = new SignalRFuture<E>();
 
@@ -256,7 +261,7 @@ public class HubProxy {
         HubInvocation hubData = new HubInvocation();
         hubData.setHub(mHubName);
         hubData.setMethod(method);
-        hubData.setArgs(jsonArguments);
+        hubData.setArgs(argsResult.toString());
         hubData.setCallbackId(callbackId);
 
         if (mState.size() != 0) {

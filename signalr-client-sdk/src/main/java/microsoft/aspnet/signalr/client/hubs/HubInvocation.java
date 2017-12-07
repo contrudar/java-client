@@ -13,18 +13,15 @@ import java.util.Map;
 
 @JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.ANNOTATIONS_ONLY)
 public class HubInvocation {
+
     @JsonField(name = "I")
     private String mCallbackId;
-
     @JsonField(name = "H")
     private String mHub;
-
     @JsonField(name = "M")
     private String mMethod;
-
-    @JsonField(name = "A")
-    private Object[] mArgs;
-
+    // this field is handled in Connection and HubConnection class due to the fact that LoganSquare can't handle Object[]
+    private String mArgs;
     @JsonField(name = "S")
     private Map<String, String> mState;
 
@@ -52,11 +49,11 @@ public class HubInvocation {
         mMethod = method;
     }
 
-    public Object[] getArgs() {
+    public String getArgs() {
         return mArgs;
     }
 
-    public void setArgs(Object[] args) {
+    public void setArgs(String args) {
         mArgs = args;
     }
 
