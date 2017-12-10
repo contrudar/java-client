@@ -443,6 +443,10 @@ public class Connection implements ConnectionBase {
             log("Starting abort operation", LogLevel.Verbose);
             mAbortFuture = mTransport.abort(this);
 
+            if (mAbortFuture == null) {
+                return;
+            }
+
             final Connection that = this;
             mAbortFuture.onError(new ErrorCallback() {
 
