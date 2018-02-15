@@ -92,7 +92,7 @@ public class HubConnection extends Connection {
 
                     String id = result.getId().toLowerCase(Locale.getDefault());
                     log("Result Id: " + id, LogLevel.Verbose);
-                    log("Result Data: " + result.getResult(), LogLevel.Verbose);
+                    log("Result Data: " + new JSONObject(result.getResult()).toString(), LogLevel.Verbose);
 
                     if (mCallbacks.containsKey(id)) {
                         log("Get and remove callback with id: " + id, LogLevel.Verbose);

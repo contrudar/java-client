@@ -238,8 +238,9 @@ public class HubProxy {
                             }
 
                             if (result.getResult() != null && resultClass != null) {
+                                final String jsonResult = new JSONObject(result.getResult()).toString();
                                 log("Found result invoking method on hub: " + result.getResult(), LogLevel.Information);
-                                resultObject = parse(result.getResult(), resultClass);
+                                resultObject = parse(jsonResult, resultClass);
                             }
                         } catch (Exception e) {
                             errorHappened = true;

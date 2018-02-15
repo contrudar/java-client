@@ -21,7 +21,7 @@ public class HubResult {
     @JsonField(name = "I")
     private String id;
     @JsonField(name = "R")
-    private String result;
+    private Map<String, Object> result;
     @JsonField(name = "H")
     private boolean hubException;
     @JsonField(name = "E")
@@ -39,11 +39,11 @@ public class HubResult {
         this.id = id;
     }
 
-    public String getResult() {
+    public Map<String, Object> getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public void setResult(Map<String, Object> result) {
         this.result = result;
     }
 
